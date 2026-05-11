@@ -6,12 +6,17 @@
     "poster": "/A3YkWWr7fD2bZXmvGxvxGzaclKk.jpg",
     "status": "watching",
     "season": "4",
-    "ep": "3",
+    "ep": "4",
     "log": [
       {
         "date": "2026-05-11",
         "s": "4",
         "e": 3
+      },
+      {
+        "date": "2026-05-11",
+        "s": "4",
+        "e": 4
       }
     ],
     "tmdbId": "231730"
