@@ -1,5 +1,22 @@
 [
   {
+    "id": "mp24jh51129p",
+    "title": "Severance",
+    "year": "2022",
+    "poster": "/pPHpeI2X1qEd1CS1SeyrdhZ4qnT.jpg",
+    "status": "completed",
+    "season": "1",
+    "ep": "0",
+    "log": [
+      {
+        "type": "season",
+        "season": "1",
+        "date": "2026-05-12"
+      }
+    ],
+    "tmdbId": "95396"
+  },
+  {
     "id": "mp246vg5fl30",
     "title": "Rooster",
     "year": "2026",
