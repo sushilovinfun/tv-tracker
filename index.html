@@ -241,6 +241,38 @@
   .card-body { padding: 0.75rem 0.8rem; flex: 1; display: flex; flex-direction: column; gap: 0.4rem; }
   .card-title { font-family: 'Playfair Display', serif; font-size: 0.88rem; font-weight: 700; line-height: 1.25; }
   .card-sub { font-size: 0.58rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .card-seasons {
+    font-size: 0.56rem; color: var(--blue);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    display: flex; align-items: center; gap: 0.3rem;
+  }
+  .card-seasons .pill {
+    background: rgba(58,90,122,0.12);
+    border: 1px solid rgba(58,90,122,0.3);
+    padding: 0.08rem 0.32rem;
+    font-size: 0.52rem;
+    letter-spacing: 0.05em;
+  }
+
+  /* completed seasons summary inside modal */
+  .seasons-summary {
+    background: rgba(58,90,122,0.06);
+    border: 1px solid rgba(58,90,122,0.2);
+    padding: 0.6rem 0.8rem;
+    margin-bottom: 0.9rem;
+    font-size: 0.62rem;
+    color: var(--muted);
+    display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+  }
+  .seasons-summary .label {
+    text-transform: uppercase; letter-spacing: 0.1em;
+    font-size: 0.55rem; color: var(--blue); font-weight: 500;
+  }
+  .seasons-summary .season-chip {
+    background: var(--blue); color: var(--paper);
+    padding: 0.12rem 0.4rem;
+    font-size: 0.58rem; font-weight: 500;
+  }
 
   .card-actions { display: flex; gap: 0.32rem; flex-wrap: wrap; margin-top: auto; padding-top: 0.45rem; border-top: 1px solid var(--border); }
   .act-btn { font-family: 'DM Mono', monospace; font-size: 0.52rem; text-transform: uppercase; letter-spacing: 0.07em; background: none; border: 1px solid var(--border); color: var(--muted); padding: 0.22rem 0.45rem; cursor: pointer; transition: all 0.14s; }
@@ -391,6 +423,7 @@
 <div class="modal-bg" id="modalBg" onclick="maybeCloseModal(event)">
   <div class="modal">
     <h3 id="modalTitle">Show</h3>
+    <div id="seasonsSummary" class="seasons-summary" style="display:none"></div>
     <div class="field">
       <label>Status</label>
       <select id="modalStatus">
@@ -952,6 +985,19 @@ function render() {
     const checkin  = s.status === 'watching'
       ? `<button class="act-btn checkin" data-id="${s.id}" onclick="checkIn(this.dataset.id)">✓ check in</button>`
       : '';
+
+    // Completed seasons indicator
+    const completed = getCompletedSeasons(s);
+    let seasonsLine = '';
+    if (completed.length === 1) {
+      seasonsLine = `<div class="card-seasons">✓ Season ${completed[0]} complete</div>`;
+    } else if (completed.length > 1) {
+      seasonsLine = `<div class="card-seasons">
+        ✓ <span class="pill">${completed.length} seasons</span>
+        <span style="color:var(--muted);font-size:0.5rem;">S${completed.join(', S')}</span>
+      </div>`;
+    }
+
     return `<div class="card" style="animation-delay:${Math.min(i * 25, 250)}ms">
       <div class="poster-wrap">
         ${poster}
@@ -960,6 +1006,7 @@ function render() {
       <div class="card-body">
         <div class="card-title">${esc(s.title)}</div>
         <div class="card-sub">${s.year} · ${progress}</div>
+        ${seasonsLine}
         <div class="card-actions">
           ${checkin}
           <button class="act-btn" data-id="${s.id}" onclick="openModal(this.dataset.id)">edit</button>
@@ -967,6 +1014,16 @@ function render() {
       </div>
     </div>`;
   }).join('');
+}
+
+// Returns sorted, deduplicated array of completed season numbers from a show's log
+function getCompletedSeasons(s) {
+  if (!s.log) return [];
+  const seasons = s.log
+    .filter(l => l.type === 'season')
+    .map(l => parseInt(l.season))
+    .filter(n => !isNaN(n));
+  return [...new Set(seasons)].sort((a, b) => a - b);
 }
 
 // ══════════════════════════════════════════════
@@ -996,6 +1053,18 @@ function openModal(id) {
   $('modalStatus').value      = s.status;
   $('modalSeason').value      = s.season;
   $('modalEp').value          = s.ep;
+
+  // Populate the completed-seasons summary block
+  const summary = $('seasonsSummary');
+  const completed = getCompletedSeasons(s);
+  if (completed.length) {
+    const chips = completed.map(n => `<span class="season-chip">S${n}</span>`).join('');
+    const inProgress = s.status === 'watching' ? ` &nbsp;·&nbsp; <em style="font-style:italic;color:var(--green)">S${s.season} in progress</em>` : '';
+    summary.innerHTML = `<span class="label">Completed:</span> ${chips}${inProgress}`;
+    summary.style.display = 'flex';
+  } else {
+    summary.style.display = 'none';
+  }
 
   const log = (s.log || []).slice().reverse().slice(0, 15);
   $('logRows').innerHTML = log.length
