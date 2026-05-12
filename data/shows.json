@@ -91,6 +91,11 @@
         "type": "season",
         "season": "1",
         "date": "2026-05-12"
+      },
+      {
+        "type": "season",
+        "season": "2",
+        "date": "2026-05-12"
       }
     ],
     "tmdbId": "129500"
