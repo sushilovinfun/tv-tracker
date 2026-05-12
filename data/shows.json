@@ -85,7 +85,7 @@
     "poster": "/wurkEbwnhkCeJiPJcCrDZThRx6j.jpg",
     "status": "watching",
     "season": "5",
-    "ep": "7",
+    "ep": "8",
     "log": [
       {
         "type": "season",
@@ -136,6 +136,11 @@
         "date": "2026-05-12",
         "s": "5",
         "e": 7
+      },
+      {
+        "date": "2026-05-12",
+        "s": "5",
+        "e": 8
       }
     ],
     "tmdbId": "129500"
