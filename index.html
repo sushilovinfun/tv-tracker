@@ -404,6 +404,9 @@
       <div class="field"><label>Season</label><input type="text" id="modalSeason" placeholder="1" /></div>
       <div class="field"><label>Episode</label><input type="text" id="modalEp" placeholder="0" /></div>
     </div>
+    <button class="btn btn-ghost" onclick="markSeasonComplete()" style="width:100%;margin-bottom:0.5rem;border-color:var(--blue);color:var(--blue);">
+      ✓ Mark Current Season Complete
+    </button>
     <div class="log-section">
       <h4>Watch History</h4>
       <div id="logRows"></div>
@@ -1033,6 +1036,29 @@ function saveModal() {
   render();
   closeModal();
   toast('Saved');
+}
+
+function markSeasonComplete() {
+  const s = shows.find(x => x.id === editId);
+  if (!s) return;
+  const season = $('modalSeason').value || s.season;
+  s.log = s.log || [];
+
+  // Prevent duplicate season-completion entries for the same season
+  const alreadyLogged = s.log.some(l => l.type === 'season' && String(l.season) === String(season));
+  if (alreadyLogged) {
+    if (!confirm(`Season ${season} is already marked complete. Add another entry anyway?`)) return;
+  }
+
+  s.log.push({ type: 'season', season: String(season), date: today() });
+  // Also update the show's season field so it reflects what was just completed
+  s.season = String(season);
+
+  saveData();
+  // Re-render the log inside the modal so the new entry shows immediately
+  openModal(editId);
+  render();
+  toast(`✓ Season ${season} marked complete`);
 }
 
 function removeShow() {
