@@ -84,7 +84,7 @@
     "year": "2022",
     "poster": "/wurkEbwnhkCeJiPJcCrDZThRx6j.jpg",
     "status": "completed",
-    "season": "3",
+    "season": "4",
     "ep": "0",
     "log": [
       {
@@ -100,6 +100,11 @@
       {
         "type": "season",
         "season": "3",
+        "date": "2026-05-12"
+      },
+      {
+        "type": "season",
+        "season": "4",
         "date": "2026-05-12"
       }
     ],
