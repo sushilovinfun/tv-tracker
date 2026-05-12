@@ -6,8 +6,14 @@
     "poster": "/aikvD4Nu7N6ekbrXNua8vJlO8JU.jpg",
     "status": "watching",
     "season": "1",
-    "ep": "0",
-    "log": [],
+    "ep": "1",
+    "log": [
+      {
+        "date": "2026-05-12",
+        "s": "1",
+        "e": 1
+      }
+    ],
     "tmdbId": "254953"
   },
   {
