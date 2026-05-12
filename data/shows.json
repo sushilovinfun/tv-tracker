@@ -83,10 +83,16 @@
     "title": "Next Level Chef",
     "year": "2022",
     "poster": "/wurkEbwnhkCeJiPJcCrDZThRx6j.jpg",
-    "status": "want",
+    "status": "completed",
     "season": "1",
     "ep": "0",
-    "log": [],
+    "log": [
+      {
+        "type": "season",
+        "season": "1",
+        "date": "2026-05-12"
+      }
+    ],
     "tmdbId": "129500"
   },
   {
