@@ -184,6 +184,32 @@
   .r-add:hover:not(:disabled) { border-color: var(--amber); color: var(--amber); }
   .r-add:disabled { opacity: 0.4; cursor: default; }
 
+  /* inline add-form inside search results */
+  .r-form {
+    width: 100%; padding: 0.65rem 1rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    background: rgba(200,131,58,0.05);
+    display: none;
+  }
+  .r-form.open { display: block; }
+  .r-form-row { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+  .r-form select, .r-form input {
+    font-family: 'DM Mono', monospace; font-size: 0.65rem;
+    background: var(--paper); border: 1px solid var(--border);
+    color: var(--ink); padding: 0.3rem 0.5rem; outline: none;
+  }
+  .r-form select { flex: 1.5; min-width: 110px; }
+  .r-form input  { width: 52px; flex-shrink: 0; }
+  .r-form label  { font-size: 0.55rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin: 0; }
+  .r-form-col    { display: flex; flex-direction: column; gap: 0.18rem; }
+  .r-save {
+    font-family: 'DM Mono', monospace; font-size: 0.58rem; text-transform: uppercase;
+    letter-spacing: 0.09em; background: var(--ink); color: var(--paper);
+    border: none; padding: 0.32rem 0.75rem; cursor: pointer; transition: background 0.15s;
+    white-space: nowrap;
+  }
+  .r-save:hover { background: var(--amber-dark); }
+
   /* ─── TABS ─── */
   .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; }
   .tab {
@@ -802,8 +828,8 @@ function renderResults(results) {
       ? `<img class="r-poster" src="${POSTER_W}${r.poster_path}" alt="" />`
       : `<div class="r-poster-ph">?</div>`;
     const added = shows.some(s => String(s.tmdbId) === String(r.id));
-    // Store data on the button element to avoid inline quote escaping issues
-    return `<div class="r-item">
+    const fid   = `rf-${r.id}`; // unique id for this result's inline form
+    return `<div class="r-item" id="ri-${r.id}">
       ${img}
       <div class="r-info">
         <div class="r-title">${esc(r.name)}</div>
@@ -815,35 +841,84 @@ function renderResults(results) {
         data-title="${esc(r.name)}"
         data-year="${year}"
         data-poster="${r.poster_path || ''}"
-        onclick="addShow(this)">
+        data-fid="${fid}"
+        onclick="toggleAddForm(this)">
         ${added ? '✓ added' : '+ add'}
       </button>
+    </div>
+    <div class="r-form" id="${fid}">
+      <div class="r-form-row">
+        <div class="r-form-col">
+          <label>Status</label>
+          <select id="${fid}-status">
+            <option value="want">Want to Watch</option>
+            <option value="watching">Watching</option>
+            <option value="completed">Completed</option>
+            <option value="dropped">Dropped</option>
+          </select>
+        </div>
+        <div class="r-form-col">
+          <label>Season</label>
+          <input type="text" id="${fid}-season" value="1" />
+        </div>
+        <div class="r-form-col">
+          <label>Episode</label>
+          <input type="text" id="${fid}-ep" value="0" />
+        </div>
+        <button class="r-save"
+          data-tmdbid="${r.id}"
+          data-title="${esc(r.name)}"
+          data-year="${year}"
+          data-poster="${r.poster_path || ''}"
+          data-fid="${fid}"
+          onclick="confirmAdd(this)">Save</button>
+      </div>
     </div>`;
   }).join('');
   box.classList.add('open');
 }
 
-function addShow(btn) {
+function toggleAddForm(btn) {
+  const fid  = btn.dataset.fid;
+  const form = $(fid);
+  if (!form) return;
+  const isOpen = form.classList.contains('open');
+  // Close all open forms first
+  document.querySelectorAll('.r-form.open').forEach(f => f.classList.remove('open'));
+  if (!isOpen) form.classList.add('open');
+}
+
+function confirmAdd(btn) {
+  const fid    = btn.dataset.fid;
   const tmdbId = btn.dataset.tmdbid;
   const title  = btn.dataset.title;
   const year   = btn.dataset.year;
   const poster = btn.dataset.poster;
+  const status = $(`${fid}-status`).value;
+  const season = $(`${fid}-season`).value || '1';
+  const ep     = $(`${fid}-ep`).value     || '0';
 
   if (shows.some(s => String(s.tmdbId) === String(tmdbId))) {
     toast('Already in your list'); return;
   }
 
+  const log = [];
+  // If adding as completed, log a season-completion entry immediately
+  if (status === 'completed') {
+    log.push({ type: 'season', season, date: today() });
+  }
+
   shows.unshift({
     id: uid(), title, year, poster,
-    status: 'want', season: '1', ep: '0',
-    log: [], tmdbId: String(tmdbId),
+    status, season, ep,
+    log, tmdbId: String(tmdbId),
   });
 
   saveData();
   render();
   $('resultsBox').classList.remove('open');
   $('searchInput').value = '';
-  toast(`"${title}" added`);
+  toast(`"${title}" added as ${LABEL[status]}`);
 }
 
 // ══════════════════════════════════════════════
@@ -921,7 +996,15 @@ function openModal(id) {
 
   const log = (s.log || []).slice().reverse().slice(0, 15);
   $('logRows').innerHTML = log.length
-    ? log.map(l => `<div class="log-row"><span>S${l.s}E${l.e}</span><span>${l.date}</span></div>`).join('')
+    ? log.map(l => {
+        if (l.type === 'season') {
+          return `<div class="log-row">
+            <span style="color:var(--blue)">✓ Season ${l.season} completed</span>
+            <span>${l.date}</span>
+          </div>`;
+        }
+        return `<div class="log-row"><span>S${l.s}E${l.e}</span><span>${l.date}</span></div>`;
+      }).join('')
     : '<div style="font-size:0.6rem;color:var(--muted);">No history yet.</div>';
 
   $('modalBg').classList.add('open');
@@ -933,9 +1016,19 @@ function maybeCloseModal(e)  { if (e.target === $('modalBg')) closeModal(); }
 function saveModal() {
   const s = shows.find(x => x.id === editId);
   if (!s) return;
-  s.status = $('modalStatus').value;
-  s.season = $('modalSeason').value;
+  const prevStatus = s.status;
+  const newStatus  = $('modalStatus').value;
+  const newSeason  = $('modalSeason').value;
+  s.status = newStatus;
+  s.season = newSeason;
   s.ep     = $('modalEp').value;
+  s.log    = s.log || [];
+
+  // Log a season-completion entry when status changes to completed
+  if (newStatus === 'completed' && prevStatus !== 'completed') {
+    s.log.push({ type: 'season', season: newSeason, date: today() });
+  }
+
   saveData();
   render();
   closeModal();
