@@ -6,7 +6,7 @@
     "poster": "/nLCpxH7BhFwP50lF0VFpxeeFjmM.jpg",
     "status": "watching",
     "season": "1",
-    "ep": "13",
+    "ep": "14",
     "log": [
       {
         "date": "2026-05-13",
@@ -67,6 +67,11 @@
         "date": "2026-05-13",
         "s": "1",
         "e": 13
+      },
+      {
+        "date": "2026-05-13",
+        "s": "1",
+        "e": 14
       }
     ],
     "tmdbId": "289567"
