@@ -121,7 +121,7 @@
     "poster": "/aikvD4Nu7N6ekbrXNua8vJlO8JU.jpg",
     "status": "watching",
     "season": "1",
-    "ep": "9",
+    "ep": "10",
     "log": [
       {
         "date": "2026-05-12",
@@ -167,6 +167,11 @@
         "date": "2026-05-12",
         "s": "1",
         "e": 9
+      },
+      {
+        "date": "2026-05-14",
+        "s": "1",
+        "e": 10
       }
     ],
     "tmdbId": "254953"
